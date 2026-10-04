@@ -8,7 +8,7 @@
 #include <unistd.h>
 #endif
 
-#include <sdl_ttf.h>
+// #include <sdl_ttf.h>
 
 bool usingCWD        = false;
 bool engineDebugMode = false;
