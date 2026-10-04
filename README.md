@@ -22,7 +22,6 @@ Even if your platform isn't supported by the official releases, you **must** buy
 * Videos now load from the Data Folder instead of the executable's folder!!!!!!!
 * Totally new dynamic window text!!!! (Use SetWindowName("Your thing here") to execute it)
 * Local date detector!!! (Use time.year, time.month and time.day to get results)
-* FPS Display!! (press f10 to see it) (you can also access it trough the scripts by using Debug.FPS)
 
 
 # Additional Tweaks
