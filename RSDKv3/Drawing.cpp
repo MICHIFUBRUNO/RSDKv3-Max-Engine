@@ -15,7 +15,7 @@
 // it rather than remove it outright.
 #define DONT_USE_VIEW_ANGLE (1)
 
-#include <SDL_ttf.h>
+// #include <SDL_ttf.h>
 // byte showFPS = 0;
 
 ushort blendLookupTable[0x100 * 0x20];
@@ -120,7 +120,7 @@ int InitRenderDevice()
                // This could be resolved by properly updating SDL to 2.32.10, but that'd involve updating a lot of app related files.
 #endif
     SDL_Init(SDL_INIT_EVERYTHING);
-        TTF_Init();
+        // TTF_Init();
         
 
 

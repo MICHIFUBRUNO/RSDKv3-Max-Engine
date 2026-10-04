@@ -553,7 +553,7 @@ void RetroEngine::Run()
 #endif
 
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
-    TTF_Quit();
+    // TTF_Quit();
     SDL_Quit();
 #endif
 }
