@@ -7,13 +7,12 @@
 #if RETRO_PLATFORM == RETRO_ANDROID
 #include <unistd.h>
 #endif
-
+// int DEFAULT_SCREEN_YSIZE = 240;
 // #include <sdl_ttf.h>
-
 bool usingCWD        = false;
 bool engineDebugMode = false;
 byte renderType      = RENDER_SW;
-
+const float MAX_DELTA_TIME = 0.25f;
 RetroEngine Engine = RetroEngine();
 
 inline int GetLowerRate(int intendRate, int targetRate)
@@ -85,7 +84,7 @@ bool ProcessEvents()
                     float scaleY = (float)pixH / (float)height;
 
                     touchX[0] = ((touchX[0] - viewOffsetX / scaleX) / ((float)width - viewOffsetX)) * SCREEN_XSIZE;
-                    touchY[0] = ((touchY[0] - viewOffsetY / scaleY) / ((float)height - viewOffsetY)) * SCREEN_YSIZE;
+                    touchY[0] = ((touchY[0] - viewOffsetY / scaleY) / ((float)height - viewOffsetY)) * SCREEN_YSIZE_CONFIG;
 
                     touchDown[0] = state & SDL_BUTTON_LMASK;
                     if (touchDown[0])
@@ -121,7 +120,7 @@ bool ProcessEvents()
                     if (finger) {
                         touchDown[touches] = true;
                         touchX[touches]    = finger->x * SCREEN_XSIZE;
-                        touchY[touches]    = finger->y * SCREEN_YSIZE;
+                        touchY[touches]    = finger->y * SCREEN_YSIZE_CONFIG;
                         touches++;
                     }
                 }
@@ -219,10 +218,10 @@ bool ProcessEvents()
                             showHitboxes ^= 1;
                         break;
 
-                    // case SDLK_F6:
-                    //     if (Engine.devMenu)
-                    //         showFPS ^= 1;
-                    //     break;
+                    case SDLK_F6:
+                        if (Engine.devMenu)
+                            showFPS ^= 1;
+                        break;
 
                     case SDLK_F10:
                         if (Engine.devMenu)
@@ -528,6 +527,9 @@ void RetroEngine::Run()
             fpsFrameCount = 0;
             Engine.lastFrame = fpsSampleTime;
         }
+        Uint32 deltaSampleTime = SDL_GetTicks();
+        Uint32 deltaSampleDuration = fpsSampleTime - Engine.lastFrame;
+        Engine.deltaTime = (double)(deltaSampleTime * 1000 + deltaSampleDuration / 2) / deltaSampleDuration;
 #endif
 
         frameStep      = false;
@@ -1500,6 +1502,7 @@ void RetroEngine::Callback(int callbackID)
             SetGlobalVariableByName("Engine.ScalingMode", Engine.scalingMode);
             SetGlobalVariableByName("Engine.WindowScale", Engine.windowScale);
             SetGlobalVariableByName("Engine.ScreenWidth", SCREEN_XSIZE);
+            SetGlobalVariableByName("Engine.ScreenHeight", SCREEN_YSIZE_CONFIG);
             SetGlobalVariableByName("Engine.HardwareRenderer", Engine.gameRenderType == "HW_Rendering");            
             break;
         case CALLBACK_SETWINDOWCHANGES:
@@ -1519,6 +1522,9 @@ void RetroEngine::Callback(int callbackID)
             if (GetGlobalVariableID("Engine.ScreenWidth") != 0xFF) {
                 SCREEN_XSIZE        = GetGlobalVariableByName("Engine.ScreenWidth");
                 SCREEN_XSIZE_CONFIG = SCREEN_XSIZE;
+            }
+            if (GetGlobalVariableID("Engine.ScreenHeight") != 0xFF) {
+                SCREEN_YSIZE_CONFIG = GetGlobalVariableByName("Engine.ScreenHeight");
             }
             if (GetGlobalVariableID("Engine.HardwareRenderer") != 0xFF)
                 Engine.gameRenderType = gameRenderTypes[GetGlobalVariableByName("Engine.HardwareRenderer")];

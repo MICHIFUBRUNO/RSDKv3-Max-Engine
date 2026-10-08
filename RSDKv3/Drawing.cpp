@@ -16,7 +16,7 @@
 #define DONT_USE_VIEW_ANGLE (1)
 
 // #include <SDL_ttf.h>
-// byte showFPS = 0;
+byte showFPS = 0;
 
 ushort blendLookupTable[0x100 * 0x20];
 ushort subtractLookupTable[0x100 * 0x20];
@@ -29,9 +29,10 @@ ushort tintLookupTable[0x10000];
 int SCREEN_XSIZE        = 424;
 int SCREEN_CENTERX      = 424 / 2;
 int SCREEN_XSIZE_CONFIG = 424;
+int SCREEN_YSIZE_CONFIG = 424;
 
 int touchWidth  = SCREEN_XSIZE;
-int touchHeight = SCREEN_YSIZE;
+int touchHeight = SCREEN_YSIZE_CONFIG;
 
 DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 
@@ -166,7 +167,7 @@ int InitRenderDevice()
     viewOffsetY    = 0;
 
     Engine.window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_XSIZE * Engine.windowScale,
-                                     SCREEN_YSIZE * Engine.windowScale, SDL_WINDOW_ALLOW_HIGHDPI | flags);
+                                     SCREEN_YSIZE_CONFIG * Engine.windowScale, SDL_WINDOW_ALLOW_HIGHDPI | flags);
 #if !RETRO_USING_OPENGL
     Engine.renderer = SDL_CreateRenderer(Engine.window, -1, SDL_RENDERER_ACCELERATED);
 #endif
@@ -346,7 +347,7 @@ int InitRenderDevice()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE, SCREEN_YSIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glGenTextures(1, &retroBuffer2x);
     glBindTexture(GL_TEXTURE_2D, retroBuffer2x);
@@ -354,7 +355,7 @@ int InitRenderDevice()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE * 2, SCREEN_YSIZE_CONFIG * 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     for (int c = 0; c < 0x10000; ++c) {
         int r               = (c & 0b1111100000000000) >> 8;
@@ -362,7 +363,7 @@ int InitRenderDevice()
         int b               = (c & 0b0000000000011111) << 3;
         gfxPalette16to32[c] = (0xFF << 24) | (b << 16) | (g << 8) | (r << 0);
     }
-    SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+    SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
 #endif
 
 #if RETRO_USING_SDL2 && (RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_WP7)
@@ -378,24 +379,24 @@ int InitRenderDevice()
 #elif RETRO_USING_SDL2 && RETRO_USING_OPENGL
     int drawableWidth, drawableHeight;
     SDL_GL_GetDrawableSize(Engine.window, &drawableWidth, &drawableHeight);
-    SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, drawableWidth, drawableHeight);
+    SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, drawableWidth, drawableHeight);
 #elif RETRO_USING_SDL2
     SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
 #endif
 
     if (renderType == RENDER_SW) {
-        Engine.frameBuffer = new ushort[GFX_LINESIZE * SCREEN_YSIZE];
-        memset(Engine.frameBuffer, 0, (GFX_LINESIZE * SCREEN_YSIZE) * sizeof(ushort));
+        Engine.frameBuffer = new ushort[GFX_LINESIZE * SCREEN_YSIZE_CONFIG];
+        memset(Engine.frameBuffer, 0, (GFX_LINESIZE * SCREEN_YSIZE_CONFIG) * sizeof(ushort));
         if (Engine.useHQModes) {
-            Engine.frameBuffer2x = new ushort[GFX_LINESIZE_DOUBLE * (SCREEN_YSIZE * 2)];
-            memset(Engine.frameBuffer2x, 0, GFX_LINESIZE_DOUBLE * (SCREEN_YSIZE * 2) * sizeof(ushort));
+            Engine.frameBuffer2x = new ushort[GFX_LINESIZE_DOUBLE * (SCREEN_YSIZE_CONFIG * 2)];
+            memset(Engine.frameBuffer2x, 0, GFX_LINESIZE_DOUBLE * (SCREEN_YSIZE_CONFIG * 2) * sizeof(ushort));
         }
 
 #if RETRO_USING_OPENGL
-        Engine.texBuffer   = new uint[SCREEN_XSIZE * SCREEN_YSIZE];
-        Engine.texBuffer2x = new uint[(SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2)];
-        memset(Engine.texBuffer, 0, (SCREEN_XSIZE * SCREEN_YSIZE) * sizeof(uint));
-        memset(Engine.texBuffer2x, 0, (SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2) * sizeof(uint));
+        Engine.texBuffer   = new uint[SCREEN_XSIZE * SCREEN_YSIZE_CONFIG];
+        Engine.texBuffer2x = new uint[(SCREEN_XSIZE * 2) * (SCREEN_YSIZE_CONFIG * 2)];
+        memset(Engine.texBuffer, 0, (SCREEN_XSIZE * SCREEN_YSIZE_CONFIG) * sizeof(uint));
+        memset(Engine.texBuffer2x, 0, (SCREEN_XSIZE * 2) * (SCREEN_YSIZE_CONFIG * 2) * sizeof(uint));
 #endif
     }
 
@@ -437,7 +438,7 @@ void FlipScreen()
 
 #if !RETRO_USE_ORIGINAL_CODE
         if (dimAmount < 1.0 && stageMode != STAGEMODE_PAUSED)
-            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE, 0, 0, 0, 0xFF - (dimAmount * 0xFF));
+            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, 0, 0, 0, 0xFF - (dimAmount * 0xFF));
 #endif
         if (Engine.gameMode == ENGINE_VIDEOWAIT) {
             FlipScreenVideo();
@@ -666,7 +667,7 @@ void FlipScreen()
     }
     else if (renderType == RENDER_HW) {
         if (dimAmount < 1.0 && stageMode != STAGEMODE_PAUSED)
-            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE, 0, 0, 0, 0xFF - (dimAmount * 0xFF));
+            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, 0, 0, 0, 0xFF - (dimAmount * 0xFF));
 
         bool fb             = Engine.useFBTexture;
         Engine.useFBTexture = Engine.useFBTexture || stageMode == STAGEMODE_PAUSED && Engine.gameMode != ENGINE_DEVMENU;
@@ -685,8 +686,8 @@ void FlipScreenFB()
 #if RETRO_USING_OPENGL
     glLoadIdentity();
     glRotatef(-90.0, 0.0, 0.0, 1.0);
-    glOrtho(0, SCREEN_XSIZE << 4, 0.0, SCREEN_YSIZE << 4, -1.0, 1.0);
-    glViewport(0, 0, SCREEN_YSIZE, SCREEN_XSIZE);
+    glOrtho(0, SCREEN_XSIZE << 4, 0.0, SCREEN_YSIZE_CONFIG << 4, -1.0, 1.0);
+    glViewport(0, 0, SCREEN_YSIZE_CONFIG, SCREEN_XSIZE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferHW);
 
@@ -726,7 +727,7 @@ void FlipScreenFB()
 
         // Return for blended rendering
         glMatrixMode(GL_PROJECTION);
-        glViewport(0, 0, SCREEN_YSIZE, SCREEN_XSIZE);
+        glViewport(0, 0, SCREEN_YSIZE_CONFIG, SCREEN_XSIZE);
         glPopMatrix();
     }
     else {
@@ -758,7 +759,7 @@ void FlipScreenNoFB()
     glClear(GL_COLOR_BUFFER_BIT);
 
     glLoadIdentity();
-    glOrtho(0, SCREEN_XSIZE << 4, SCREEN_YSIZE << 4, 0.0, -1.0, 1.0);
+    glOrtho(0, SCREEN_XSIZE << 4, SCREEN_YSIZE_CONFIG << 4, 0.0, -1.0, 1.0);
     glViewport(viewOffsetX, viewOffsetY, viewWidth, viewHeight);
 
     glBindTexture(GL_TEXTURE_2D, gfxTextureID[texPaletteNum]);
@@ -846,7 +847,7 @@ void FlipScreenHRes()
 
     glLoadIdentity();
 
-    glOrtho(0, SCREEN_XSIZE << 4, SCREEN_YSIZE << 4, 0.0, -1.0, 1.0);
+    glOrtho(0, SCREEN_XSIZE << 4, SCREEN_YSIZE_CONFIG << 4, 0.0, -1.0, 1.0);
     glViewport(viewOffsetX, viewOffsetY, bufferWidth, bufferHeight);
     glBindTexture(GL_TEXTURE_2D, gfxTextureID[texPaletteNum]);
     glDisable(GL_BLEND);
@@ -1055,6 +1056,7 @@ void ReleaseRenderDevice()
         delete[] Engine.frameBuffer2x;
 
 #if RETRO_USING_OPENGL
+
     if (Engine.texBuffer)
         delete[] Engine.texBuffer;
     if (Engine.texBuffer2x)
@@ -1124,7 +1126,7 @@ void SetFullScreen(bool fs)
         SDL_GetRendererOutputSize(Engine.renderer, &winW, &winH);
 #endif
 
-        scaleH = winH / (float)SCREEN_YSIZE;
+        scaleH = winH / (float)SCREEN_YSIZE_CONFIG;
 
         width  = scaleH * (float)SCREEN_XSIZE;
         height = winH;
@@ -1133,7 +1135,7 @@ void SetFullScreen(bool fs)
             width = winW;
 
             float scaleW = winW / (float)SCREEN_XSIZE;
-            height       = scaleW * (float)SCREEN_YSIZE;
+            height       = scaleW * (float)SCREEN_YSIZE_CONFIG;
 
             viewOffsetX = 0;
             viewOffsetY = abs(winH - height) / 2;
@@ -1347,7 +1349,7 @@ void SetScreenDimensions(int width, int height, int winWidth, int winHeight)
     bufferHeight = viewHeight = touchHeight = winHeight;
 
     viewAspect = 0.75f;
-    if (viewHeight > SCREEN_YSIZE * 2)
+    if (viewHeight > SCREEN_YSIZE_CONFIG * 2)
         hq3DFloorEnabled = true;
     else
         hq3DFloorEnabled = false;
@@ -1407,7 +1409,7 @@ void SetScreenDimensions(int width, int height, int winWidth, int winHeight)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE, SCREEN_YSIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE, SCREEN_YSIZE_CONFIG, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glGenTextures(1, &retroBuffer2x);
     glBindTexture(GL_TEXTURE_2D, retroBuffer2x);
@@ -1415,7 +1417,7 @@ void SetScreenDimensions(int width, int height, int winWidth, int winHeight)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Engine.scalingMode ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_XSIZE * 2, SCREEN_YSIZE_CONFIG * 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
     // scaling calc for width (fixes issues with hardware rendering)
@@ -2078,7 +2080,7 @@ void DrawStageGFX()
 void DrawClassicFadeOut(int XPos, int YPos, int width, int height, int R, int G, int B, int A)
 {
 	
-// #if RETRO_SOFTWARE_RENDER
+// if renderType == 
     if (width + XPos > GFX_LINESIZE)
         width = GFX_LINESIZE - XPos;
     if (XPos < 0) {
@@ -2419,16 +2421,38 @@ void DrawDebugOverlays()
             }
         }
 
-        DrawRectangle(SCREEN_XSIZE - 70, 0, 70, 20, 0, 0, 0, 0x80);
+    }
+    if (showFPS)
+    {
+        DrawRectangle(SCREEN_XSIZE - 70, 0, 70, 150, 0, 0, 0, 0x80);
         const int c = AddGraphicsFile("Global/DebugShit.gif");
         DrawSprite(SCREEN_XSIZE - 60, 1, 23, 7, 80, 0, c);
         
-        DrawNumberShit(0, 15, 1, Engine.fps, 3, 8, c); // FPS COUNT
+        DrawNumberShit(0, 30, -9, Engine.fps, 3, 8, c); // FPS COUNT
 
+        Player *player = &playerList[activePlayer];
+
+        DrawSprite(SCREEN_XSIZE - 60, 10, 49, 7, 0, 8, c); // "Player"
+        DrawSprite(SCREEN_XSIZE - 60, 19, 8, 7, 50, 8, c); // "X"
+        DrawNumberShit(0, 20, 9, player->XPos >> 16, 7, 8, 0); // The Player's Xpos
+        DrawSprite(SCREEN_XSIZE - 60, 28, 8, 7, 58, 8, c); // "Y"
+        DrawNumberShit(0, 20, 18, player->YPos >> 16, 7, 8, 0); // And Ypos
+        DrawSprite(SCREEN_XSIZE - 60, 39, 39, 7, 78, 8, c); // "Angle"
+        DrawNumberShit(0, 27, 37, player->angle, 3, 8, 0); // The Player's Angle
+        
+        DrawSprite(SCREEN_XSIZE - 60, 55 + 7, 48, 7, 0, 16, c); // "Camera"
+        DrawSprite(SCREEN_XSIZE - 60, 64+ 7, 8, 7, 50, 8, c); // "X"
+        DrawNumberShit(0, 20, 55+ 7, xScrollOffset, 7, 8, 0); // The Camera's Xpos
+        DrawSprite(SCREEN_XSIZE - 60, 73+ 7, 8, 7, 58, 8, c); // "Y"
+        DrawNumberShit(0, 20, 64+ 7, yScrollOffset, 7, 8, 0); // And Ypos
+        DrawSprite(SCREEN_XSIZE - 64, 82+ 7, 45, 7, 49, 16, c); // "Target"
+        DrawNumberShit(0, 20 + 15, 82+ 7 - 9, cameraTarget, 7, 8, 0); // Camera's target (shop XDXDXDXDXDDXDXDXDXDXDXDXXXDXDXDDDXDXD)
+
+        DrawSprite(SCREEN_XSIZE - 60, 82+ 16, 31, 7, 0, 32, c); // "Seed"
+        DrawNumberShit(0, 20 + 15, 82 + 32 - 9, Engine.RNGSeed, 7, 8, 0); // RNG Seed
+        // DrawSprite(SCREEN_XSIZE - 60, 82+ 24, 14, 7, 0, 40, c); // "DT"
+        // DrawNumberShit(0, 20 + 15, 82 + 24 - 9, Engine.deltaTime, 7, 8, 0); // Delta Time
     }
-
-    // DrawNumberShit3(0, -5, 0, stageListPosition, 3, 8, 0); // StageListPos
-    // DrawNumberShit2(0, -5, 0, activeStageList, 3, 8, 0); // StageListPos
 }
 #endif
 
@@ -5409,32 +5433,15 @@ void DrawNumberShit(int StartFrame, int XPos, int YPos, int Value, int DigitLimi
 {
     const int c = AddGraphicsFile("Global/DebugShit.gif");
 
-    const GFXSurface& sheet = gfxSurface[c];
 
-    PrintLog("DebugShit: slot=%d path='%s' size=%dx%d", c, sheet.fileName, sheet.width, sheet.height);
 
-    static SpriteFrame digitFrames[10];
-    static bool framesInitialized = false;
-
-    if (!framesInitialized) {
-        for (int digit = 0; digit < 10; ++digit) {
-            digitFrames[digit].pivotX = 0;
-            digitFrames[digit].pivotY = 0;
-            digitFrames[digit].width  = 8;
-            digitFrames[digit].height = 7;
-            digitFrames[digit].sprX   = digit * 8;
-            digitFrames[digit].sprY   = 0;
-        }
-        framesInitialized = true;
-    }
 
     int divisor = 1;
     while (DigitLimit > 0) {
         int frameID = (Value / divisor) % 10 + StartFrame;
         bool isLeadingZero = !showAllDigits && divisor > 1 && Value / divisor == 0;
         if (!isLeadingZero && frameID >= 0 && frameID < 10) {
-            const SpriteFrame &frame = digitFrames[frameID];
-            DrawSprite((SCREEN_XSIZE - 45) + XPos, 10 + YPos, frame.width, frame.height, frame.sprX, frame.sprY, c);
+            DrawSprite((SCREEN_XSIZE - 45) + XPos, 10 + YPos, 8, 7, frameID * 8, 0, c);
         }
         XPos -= spacing;
         divisor *= 10;
@@ -5442,79 +5449,6 @@ void DrawNumberShit(int StartFrame, int XPos, int YPos, int Value, int DigitLimi
     }
 }
 
-void DrawNumberShit2(int StartFrame, int XPos, int YPos, int Value, int DigitLimit, int spacing, int showAllDigits)
-{
-    const int c = AddGraphicsFile("Global/DebugShit.gif");
-
-    const GFXSurface& sheet = gfxSurface[c];
-
-    PrintLog("DebugShit: slot=%d path='%s' size=%dx%d", c, sheet.fileName, sheet.width, sheet.height);
-
-    static SpriteFrame digitFrames[10];
-    static bool framesInitialized = false;
-
-    if (!framesInitialized) {
-        for (int digit = 0; digit < 10; ++digit) {
-            digitFrames[digit].pivotX = 0;
-            digitFrames[digit].pivotY = 0;
-            digitFrames[digit].width  = 8;
-            digitFrames[digit].height = 7;
-            digitFrames[digit].sprX   = digit * 8;
-            digitFrames[digit].sprY   = 0;
-        }
-        framesInitialized = true;
-    }
-
-    int divisor = 1;
-    while (DigitLimit > 0) {
-        int frameID = (Value / divisor) % 10 + StartFrame;
-        bool isLeadingZero = !showAllDigits && divisor > 1 && Value / divisor == 0;
-        if (!isLeadingZero && frameID >= 0 && frameID < 10) {
-            const SpriteFrame &frame = digitFrames[frameID];
-            DrawSprite((SCREEN_XSIZE - 45) + XPos, 20 + YPos, frame.width, frame.height, frame.sprX, frame.sprY, c);
-        }
-        XPos -= spacing;
-        divisor *= 10;
-        --DigitLimit;
-    }
-}
-
-void DrawNumberShit3(int StartFrame, int XPos, int YPos, int Value, int DigitLimit, int spacing, int showAllDigits)
-{
-    const int c = AddGraphicsFile("Global/DebugShit.gif");
-
-    const GFXSurface& sheet = gfxSurface[c];
-
-    PrintLog("DebugShit: slot=%d path='%s' size=%dx%d", c, sheet.fileName, sheet.width, sheet.height);
-
-    static SpriteFrame digitFrames[10];
-    static bool framesInitialized = false;
-
-    if (!framesInitialized) {
-        for (int digit = 0; digit < 10; ++digit) {
-            digitFrames[digit].pivotX = 0;
-            digitFrames[digit].pivotY = 0;
-            digitFrames[digit].width  = 8;
-            digitFrames[digit].height = 7;
-            digitFrames[digit].sprX   = digit * 8;
-            digitFrames[digit].sprY   = 0;
-        }
-        framesInitialized = true;
-    }
-
-    int divisor = 1;
-    while (DigitLimit > 0) {
-        int frameID = (Value / divisor) % 10 + StartFrame;
-        bool isLeadingZero = !showAllDigits && divisor > 1 && Value / divisor == 0;
-        if (!isLeadingZero && frameID >= 0 && frameID < 10) {
-            const SpriteFrame &frame = digitFrames[frameID];
-            DrawSprite((SCREEN_XSIZE - 45) + XPos + 15, 20 + YPos, frame.width, frame.height, frame.sprX, frame.sprY, c);
-        }
-        XPos -= spacing;
-        divisor *= 10;
-        --DigitLimit;
-    }
-}
 
 
 void DrawSpriteFlipped(int XPos, int YPos, int width, int height, int sprX, int sprY, int direction, int sheetID)

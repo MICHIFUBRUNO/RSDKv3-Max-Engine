@@ -19,7 +19,7 @@ int cameraAdjustY  = 0;
 int xScrollOffset  = 0;
 int yScrollOffset  = 0;
 int yScrollA       = 0;
-int yScrollB       = SCREEN_YSIZE;
+int yScrollB       = SCREEN_YSIZE_CONFIG;
 int xScrollA       = 0;
 int xScrollB       = SCREEN_XSIZE;
 int yScrollMove    = 0;
@@ -27,7 +27,7 @@ int cameraShakeX   = 0;
 int cameraShakeY   = 0;
 int cameraLag      = 0;
 int cameraLagStyle = 0;
-
+int cameraScale = 1;
 int xBoundary1    = 0;
 int newXBoundary1 = 0;
 int yBoundary1    = 0;
@@ -126,14 +126,14 @@ void ProcessStage(void)
         case STAGEMODE_LOAD: // Startup
             fadeMode = 0;
             SetActivePalette(0, 0, 256);
-
+            
             cameraEnabled = true;
             cameraTarget  = -1;
             cameraAdjustY = 0;
             xScrollOffset = 0;
             yScrollOffset = 0;
             yScrollA      = 0;
-            yScrollB      = SCREEN_YSIZE;
+            yScrollB      = SCREEN_YSIZE_CONFIG;
             xScrollA      = 0;
             xScrollB      = SCREEN_XSIZE;
             yScrollMove   = 0;
@@ -606,7 +606,7 @@ void LoadStageFiles(void)
     xScrollA = (playerList[0].XPos >> 16) - SCREEN_CENTERX;
     xScrollB = (playerList[0].XPos >> 16) - SCREEN_CENTERX + SCREEN_XSIZE;
     yScrollA = (playerList[0].YPos >> 16) - SCREEN_SCROLL_UP;
-    yScrollB = (playerList[0].YPos >> 16) - SCREEN_SCROLL_UP + SCREEN_YSIZE;
+    yScrollB = (playerList[0].YPos >> 16) - SCREEN_SCROLL_UP + SCREEN_YSIZE_CONFIG;
 
 }
 int LoadActFile(const char *ext, int stageID, FileInfo *info)
@@ -1262,7 +1262,7 @@ void SetPlayerScreenPosition(Player *player)
         if (xScrollOffset <= xBoundary1) {
             --xBoundary1;
             if (player->XVelocity < 0) {
-                xBoundary1 += player->XVelocity >> 16;
+                xBoundary1 += (player->XVelocity) >> 16;
                 if (xBoundary1 < newXBoundary1)
                     xBoundary1 = newXBoundary1;
             }

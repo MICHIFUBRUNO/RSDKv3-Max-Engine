@@ -1,6 +1,7 @@
 #include "RetroEngine.hpp"
 #include <cmath>
 #include <ctime>
+#include <random>
 ObjectScript objectScriptList[OBJECT_COUNT];
 
 ScriptFunction scriptFunctionList[FUNCTION_COUNT];
@@ -369,7 +370,8 @@ const char variableNames[][0x20] = {
     "Time.Day",
     "Player.ScaleH",
     "Player.ScaleV",
-    "Debug.FPS",
+    // "Debug.FPS",
+    // "RNG.Seed",
 };
 #endif
 
@@ -519,6 +521,11 @@ const FunctionInfo functions[] = {
     FunctionInfo("SetClassicFadeOut", 4),
     FunctionInfo("SetClassicFadeIn", 4),
     FunctionInfo("SetWindowName", 1),
+    FunctionInfo("SetRNGSeed", 1),
+    FunctionInfo("RNGSeedRandom", 0),
+    FunctionInfo("SetRNGToSeed", 0),
+    // FunctionInfo("BetterRand", 2),
+
     // FunctionInfo("DrawBox", 8),
 };
 
@@ -851,7 +858,8 @@ enum ScrVariable {
     VAR_TIMEDAY,
     VAR_PLAYERSCALEH,
     VAR_PLAYERSCALEV,
-    VAR_DEBUG_FPS,
+    // VAR_DEBUG_FPS,
+    VAR_RNG_SEED,
     VAR_MAX_CNT
 };
 
@@ -1001,6 +1009,10 @@ enum ScrFunction {
     FUNC_SETCLASSICFADEOUT,
     FUNC_SETCLASSICFADEIN,
     FUNC_SETWINDOWNAME,
+    FUNC_SETRNGSEED,
+    FUNC_RNGSEEDRANDOM,
+    FUNC_SETRNGTOSEED,
+    // FUNC_BETTERRAND,
     // FUNC_DRAWBOX,
     FUNC_MAX_CNT
 };
@@ -3152,7 +3164,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                     case VAR_SCREENCENTERX: scriptEng.operands[i] = SCREEN_CENTERX; break;
                     case VAR_SCREENCENTERY: scriptEng.operands[i] = SCREEN_CENTERY; break;
                     case VAR_SCREENXSIZE: scriptEng.operands[i] = SCREEN_XSIZE; break;
-                    case VAR_SCREENYSIZE: scriptEng.operands[i] = SCREEN_YSIZE; break;
+                    case VAR_SCREENYSIZE: scriptEng.operands[i] = SCREEN_YSIZE_CONFIG; break;
                     case VAR_SCREENXOFFSET: scriptEng.operands[i] = xScrollOffset; break;
                     case VAR_SCREENYOFFSET: scriptEng.operands[i] = yScrollOffset; break;
                     case VAR_SCREENSHAKEX: scriptEng.operands[i] = cameraShakeX; break;
@@ -3421,9 +3433,14 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                         scriptEng.operands[i] = tm_now->tm_mday;
                         break;
                     }
-                    case VAR_DEBUG_FPS:
+                    // case VAR_DEBUG_FPS:
+                    // {
+                    //     scriptEng.operands[i] = Engine.fps;
+                    //     break;
+                    // }
+                    case VAR_RNG_SEED:
                     {
-                        scriptEng.operands[i] = Engine.fps;
+                        scriptEng.operands[i] = Engine.RNGSeed;
                         break;
                     }
                 }
@@ -3601,6 +3618,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                 --jumpTableStackPos;
                 break;
             case FUNC_RAND: scriptEng.operands[0] = rand() % scriptEng.operands[1]; break;
+            // case FUNC_BETTERRAND: scriptEng.operands[0] = distrib(scriptEng.operands[1], scriptEng.operands[2]); break;
             case FUNC_SIN: {
                 scriptEng.operands[0] = Sin512(scriptEng.operands[1]);
                 break;
@@ -4292,7 +4310,8 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                 if (player->tileCollisions) {
                     ProcessPlayerTileCollisions(player);
                 }
-                else {
+                else 
+                {
                     player->XPos += player->XVelocity;
                     player->YPos += player->YVelocity;
                 }
@@ -4710,7 +4729,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                 break;
             }
             case FUNC_REMAPBUTTON: { 
-                scriptEng.operands[2] = GetPaletteEntryPacked(scriptEng.operands[0], scriptEng.operands[1]); 
+                inputDevice[scriptEng.operands[0]].keyMappings = scriptEng.operands[1]; 
                 break;
             case FUNC_SETCLASSICFADE:
             case FUNC_SETCLASSICFADEOUT:
@@ -4723,6 +4742,16 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                 break;
             case FUNC_SETWINDOWNAME:
                 MakeNewWindowName(scriptText);
+                break;
+            case FUNC_SETRNGSEED:
+                Engine.RNGSeed = scriptEng.operands[0];
+                break;
+            case FUNC_RNGSEEDRANDOM:
+
+                Engine.RNGSeed = GetRandomSeed();
+                break;
+            case FUNC_SETRNGTOSEED:
+                srand(Engine.RNGSeed);
                 break;
             // case FUNC_DRAWBOX:
             //     DrawRectangle(scriptEng.operands[0], scriptEng.operands[1], scriptEng.operands[2], scriptEng.operands[3], scriptEng.operands[4], scriptEng.operands[5], scriptEng.operands[6], scriptEng.operands[7]);
@@ -5242,7 +5271,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub)
                     case VAR_SCREENYOFFSET:
                         yScrollOffset = scriptEng.operands[i];
                         yScrollA      = yScrollOffset;
-                        yScrollB      = SCREEN_YSIZE + yScrollOffset;
+                        yScrollB      = SCREEN_YSIZE_CONFIG + yScrollOffset;
                         break;
                     case VAR_SCREENSHAKEX: cameraShakeX = scriptEng.operands[i]; break;
                     case VAR_SCREENSHAKEY: cameraShakeY = scriptEng.operands[i]; break;
@@ -5533,4 +5562,13 @@ void MakeNewWindowName(char *newName)
 {
     StrCopy(Engine.gameWindowText, newName);
     SDL_SetWindowTitle(Engine.window, Engine.gameWindowText);
+}
+
+uint32_t GetRandomSeed()
+{
+    std::random_device rd;
+    std::seed_seq seed{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
+    std::mt19937 gen(seed);
+
+    return gen();
 }

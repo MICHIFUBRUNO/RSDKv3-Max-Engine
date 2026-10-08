@@ -9,7 +9,7 @@ char typeNames[OBJECT_COUNT][0x40];
 int OBJECT_BORDER_X1       = 0x80;
 int OBJECT_BORDER_X2       = 0;
 const int OBJECT_BORDER_Y1 = 0x100;
-const int OBJECT_BORDER_Y2 = SCREEN_YSIZE + 0x100;
+const int OBJECT_BORDER_Y2 = SCREEN_YSIZE_CONFIG + 0x100;
 
 void SetObjectTypeName(const char *objectName, int objectID)
 {
@@ -72,8 +72,8 @@ void ProcessObjects()
                 break;
 
             case PRIORITY_BOUNDS_DESTROY:
-                x = entity->XPos >> 16;
-                y = entity->YPos >> 16;
+                x = (entity->XPos >> 16);
+                y = (entity->YPos >> 16);
                 if (x <= xScrollOffset - OBJECT_BORDER_X1 || x >= OBJECT_BORDER_X2 + xScrollOffset || y <= yScrollOffset - OBJECT_BORDER_Y1
                     || y >= yScrollOffset + OBJECT_BORDER_Y2) {
                     active       = false;

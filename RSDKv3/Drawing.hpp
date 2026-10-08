@@ -44,6 +44,7 @@ extern ushort tintLookupTable[0x10000];
 extern int SCREEN_XSIZE;
 extern int SCREEN_CENTERX;
 extern int SCREEN_XSIZE_CONFIG;
+extern int SCREEN_YSIZE_CONFIG;
 
 extern int touchWidth;
 extern int touchHeight;
@@ -138,7 +139,7 @@ extern GLuint videoBuffer;
 #endif
 extern DrawVertex screenRect[4];
 extern DrawVertex retroScreenRect[4];
-extern int showFPS;
+extern byte showFPS;
 
 int InitRenderDevice();
 void FlipScreen();

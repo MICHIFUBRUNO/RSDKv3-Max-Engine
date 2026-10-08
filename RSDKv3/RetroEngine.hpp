@@ -104,6 +104,7 @@ typedef unsigned int uint;
 #define RETRO_USING_MOUSE
 #define RETRO_USING_TOUCH
 #define DEFAULT_SCREEN_XSIZE 424
+#define DEFAULT_SCREEN_YSIZE 240;
 #define DEFAULT_FULLSCREEN   false
 #endif
 
@@ -347,8 +348,8 @@ enum RetroBytecodeFormat {
 };
 
 // General Defines
-#define SCREEN_YSIZE   (240)
-#define SCREEN_CENTERY (SCREEN_YSIZE / 2)
+#define SCREEN_YSIZE   240
+#define SCREEN_CENTERY (SCREEN_YSIZE_CONFIG / 2)
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX
 #if RETRO_USING_SDL2
@@ -385,6 +386,8 @@ enum RetroBytecodeFormat {
 #endif
 
 #include <ctime>
+// #include <duthomhas/csprng.hpp>
+
 
 extern bool usingCWD;
 extern bool engineDebugMode;
@@ -425,8 +428,15 @@ public:
     }
 
 #if !RETRO_USE_ORIGINAL_CODE
+    float Accumulator = 0.0f;
     int fps = 0;
+    int deltaTime = 0;
+    uint32_t RNGSeed = 0;
     uint lastFrame = 0;
+
+    uint lastDeltarune = 0;
+    uint fpsCounter = 0;
+    uint frameCounter = 0;
     bool usingDataFile_Config = false;
     bool usingDataFileStore   = false;
 #endif
@@ -475,6 +485,7 @@ public:
     bool frameStep       = false;
     int dimTimer         = 0;
     int dimLimit         = 0;
+    int WindowHeight         = 0;
     float dimPercent     = 1.0;
     float dimMax         = 1.0;
 

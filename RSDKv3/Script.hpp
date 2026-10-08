@@ -100,6 +100,7 @@ void LoadBytecode(int stageListID, int scriptID);
 
 void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptSub);
 
+uint32_t GetRandomSeed();
 void ClearScriptData();
 
 #endif // !SCRIPT_H

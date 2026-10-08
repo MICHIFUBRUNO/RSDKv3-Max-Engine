@@ -44,7 +44,7 @@ void PlayVideoFile(char *filePath)
         filePath[len - 2] = 0;
     }
 
-    StrCopy(pathBuffer, "Data/Videos/");
+    StrCopy(pathBuffer, "Videos/");
     StrAdd(pathBuffer, filePath);
     StrAdd(pathBuffer, ".ogv");
 

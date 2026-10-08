@@ -154,7 +154,7 @@ void ProcessStageSelect()
     //#if defined RETRO_USING_MOUSE || defined RETRO_USING_TOUCH
     DrawSprite(32, 0x42, 16, 16, 78, 240, textMenuSurfaceNo);
     DrawSprite(32, 0xB2, 16, 16, 95, 240, textMenuSurfaceNo);
-    DrawSprite(SCREEN_XSIZE - 32, SCREEN_YSIZE - 32, 16, 16, 112, 240, textMenuSurfaceNo);
+    DrawSprite(SCREEN_XSIZE - 32, SCREEN_YSIZE_CONFIG - 32, 16, 16, 112, 240, textMenuSurfaceNo);
     //#endif
 
     if (!keyDown.start && !keyDown.up && !keyDown.down) {
