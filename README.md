@@ -17,11 +17,40 @@ The definitive version of RSDKv3!! (BTW, EXPECT BUGS AND STUFF, THIS IS FAR FROM
 Even if your platform isn't supported by the official releases, you **must** buy or officially download it for the assets (you don't need to run the official release, you just need the game assets). See [here](https://rsdkmodding.com/Guides/Games/SonicCD/Datapack/) for a guide on how to find the required assets from your legally obtained copy of the game. Note that only FMV files from the original Steam release of the game are supported; mobile and Origins video files do not work.
 
 # Stuff added (as of now)
-* Tables (use "table" without "private/public" to setup them) and 47 variable per-object fully ported from v4!
-* SetClassicFade() Fully ported from v4+!!
-* Videos now load from the Data Folder instead of the executable's folder!!!!!!!
-* Totally new dynamic window text!!!! (Use SetWindowName("Your thing here") to execute it)
-* Local date detector!!! (Use time.year, time.month and time.day to get results)
+Ports from v4:
+- Tables - use "table" without "private" / "public" to make it work
+
+- Object.Value47 - 47 is the variable limit per-object now
+
+Variables:
+- Time:
+  - Time.Year - Uses your computer's local time to detect the current year
+  - Time.Month - Uses your computer's local time to detect the current month
+  - Time.Day - Uses your computer's local time to detect the current day
+
+- RNG:
+  - RNG.Seed - The current Seed
+
+Functions:
+- RNG Seeds:
+  - RNGSeedRandom() - Sets a random RNG Seed
+  - SetRNGSeed(*32-bit int value here*) - Sets a specific RNG Seed
+  - SetRNGToSeed() - Makes the seed actually work on Rand() functions
+
+- Misc:
+  - SetWindowName("your thing here") - Changes the window's text
+
+
+Still Bugged but included anyway:
+- Window Height (Still doesn't affect the game itself) - Found in settings.ini
+
+- Set Classic Fade() - Works the same as in v4+ (https://github.com/prodnw/rsdkv4-plus)
+
+(Found by Pressing f6) The Debug Window displays:
+  - The current FPS
+  - Player Position And Angle
+  - Camera Position And Following
+  - The current RNG Seed
 
 
 # Additional Tweaks
